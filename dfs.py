@@ -36,7 +36,7 @@ async def on_guild_channel_create(channel):
 
 # @bot.event
 # async def on_guild_channel_edit(before, after):
-# for some reason on_guild_channel_edit isn't.. called?
+# for some reason on_guild_channel_edit is never called so I'll have to implement it another way
 
 @bot.event
 async def on_guild_channel_delete(channel):
@@ -51,7 +51,7 @@ async def on_guild_channel_delete(channel):
     elif isinstance(channel, discord.CategoryChannel):
         os.rmdir(f"{channel.name}")
 
-async def writeChannelHistory(message, filepath):
+async def writeChannelHistory(message):
     if message.author == bot.user: return
 
     filepath = f""
@@ -68,7 +68,7 @@ async def writeChannelHistory(message, filepath):
         messages.reverse()
 
         for message in messages:
-            # if message.content.startswith("```") and message.content.endswith("```"): message.content = message.content[3:-3]
+            if "`" in message: message = message.replace("`", "")
             f.write(f"{message}\n")
 
 @bot.event
