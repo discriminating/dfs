@@ -4,7 +4,7 @@ from discord.ext import commands
 bot = commands.Bot(command_prefix='$', help_command=None, intents=discord.Intents.all())
 
 config = {
-    "collaboration": True # if False, only the server owner can create channels
+    "collaboration": False # if False, only the server owner can create channels
 }
 
 @bot.event
@@ -17,6 +17,14 @@ async def setup(ctx):
     await asyncio.gather(*[category.delete() for category in ctx.guild.categories])
 
     await ctx.guild.create_text_channel("terminal")
+
+@bot.command()
+async def collaboration(ctx, arg):
+    if arg == "true": config["collaboration"] = True
+    elif arg == "false": config["collaboration"] = False
+    else: await ctx.send("please specify either true or false"); return
+
+    await ctx.send(f"collaboration set to {config['collaboration']}")
 
 @bot.event
 async def on_guild_channel_create(channel):
@@ -74,6 +82,8 @@ async def writeChannelHistory(message):
 @bot.event
 async def on_message(message):
     if message.channel.name == "terminal" and message.author != bot.user and not message.content.startswith('$'):
+        if message.author != message.guild.owner and not config["collaboration"]: await message.channel.send("no"); return
+        
         out = os.popen(message.content).read()
         await message.channel.send("```" + out + "```" if out != "" else "```no output```")
     
